@@ -27,8 +27,8 @@ impl Block {
         let size = self.data.len() + (self.offsets.len() << 1) + 2;
         let mut buf = BytesMut::with_capacity(size);
 
-        for i in 0..self.data.len() {
-            buf.put_u8(self.data[i]);
+        for data_item in &self.data {
+            buf.put_u8(*data_item);
         }
 
         for offset in &self.offsets {
@@ -42,12 +42,12 @@ impl Block {
 
     /// Decode from the data layout, transform the input `data` to a single `Block`
     pub fn decode(data: &[u8]) -> Self {
-        let num_of_elements = (data[data.len() - 2] as u16) << 8 | data[data.len() - 1] as u16;
+        let num_of_elements = (data[data.len() - 2] as usize) << 8 | data[data.len() - 1] as usize;
 
-        let block_data: Vec<u8> = data[0..num_of_elements as usize].to_vec();
+        let block_data: Vec<u8> = data[0..num_of_elements].to_vec();
         let mut block_offset: Vec<u16> = Vec::new();
 
-        let mut idx = num_of_elements as usize;
+        let mut idx = num_of_elements;
 
         while idx < data.len() - 2 {
             block_offset.push((data[idx] as u16) << 8 | (data[idx + 1] as u16));
